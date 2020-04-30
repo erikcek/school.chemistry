@@ -1,6 +1,8 @@
 //an array, defining the routes
 
 const urlBase = 'https://wt.kpi.fei.tuke.sk/api';
+const commentCount = 10;
+const uniqueTag = 'chemistry';
 
 export default [
   {
@@ -60,6 +62,11 @@ export default [
     hash: 'artInsert',
     target: 'router-view',
     getTemplate: insertArticle,
+  },
+  {
+    hash: 'commentInsert',
+    tarhet: 'route-view',
+    getTemplate: insertComment,
   },
 ];
 
@@ -130,66 +137,92 @@ function renderOpinion(elem) {
   return renderedOpinion;
 }
 
-async function fetchAndDisplayArticle(targetElm, artIdFromHash, page, count) {
-  fetchAndProcessArticle(...arguments, false);
-}
-
-function fetchAndProcessArticle(
+async function fetchAndDisplayArticle(
   targetElm,
   artIdFromHash,
   page,
   count,
+  commentPage
+) {
+  fetchAndProcessArticle(...arguments, false);
+}
+
+async function fetchAndProcessArticle(
+  targetElm,
+  artIdFromHash,
+  page,
+  count,
+  commentPageFromHash,
   forEdit
 ) {
+  console.log(commentPageFromHash);
+
+  const commentPage = parseInt(commentPageFromHash);
+  console.log(commentPage);
+
   const url = `${urlBase}/article/${artIdFromHash}`;
-  console.log(url);
-  fetch(url)
-    .then((response) => {
-      if (response.ok) {
-        return response.json();
-      } else {
-        //if we get server error
-        return Promise.reject(
-          new Error(
-            `Server answered with ${response.status}: ${response.statusText}.`
-          )
-        );
-      }
-    })
-    .then((responseJSON) => {
-      if (forEdit) {
-        responseJSON.formTitle = 'Article Edit';
-        responseJSON.formSubmitCall = `processArtEditFrmData(event,${artIdFromHash},${page},${count},'${urlBase}')`;
-        responseJSON.submitBtTitle = 'Save article';
-        responseJSON.urlBase = urlBase;
-
-        console.log(responseJSON);
-
-        responseJSON.backLink = `#article/${artIdFromHash}/${page}/${count}`;
-
-        document.getElementById(targetElm).innerHTML = Mustache.render(
-          document.getElementById('template-article-form').innerHTML,
-          responseJSON
-        );
-      } else {
-        responseJSON.backLink = `#articles/${page}/${count}`;
-        responseJSON.editLink = `#artEdit/${responseJSON.id}/${page}/${count}`;
-        responseJSON.deleteLink = `#artDelete/${responseJSON.id}/${page}/${count}`;
-
-        document.getElementById(targetElm).innerHTML = Mustache.render(
-          document.getElementById('template-article').innerHTML,
-          responseJSON
-        );
-      }
-    })
-    .catch((error) => {
-      ////here we process all the failed promises
-      const errMsgObj = { errMessage: error };
-      document.getElementById(targetElm).innerHTML = Mustache.render(
-        document.getElementById('template-articles-error').innerHTML,
-        errMsgObj
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new rror(
+        `Server answered with ${response.status}: ${response.statusText}.`
       );
-    });
+    }
+    const responseJSON = await response.json();
+    // fetch(url)
+    //   .then((response) => {
+    //     if (response.ok) {
+    //       return response.json();
+    //     } else {
+    //       //if we get server error
+    //       return Promise.reject(
+    //         new Error(
+    //           `Server answered with ${response.status}: ${response.statusText}.`
+    //         )
+    //       );
+    //     }
+    //   })
+
+    if (forEdit) {
+      responseJSON.formTitle = 'Article Edit';
+      responseJSON.formSubmitCall = `processArtEditFrmData(event,${artIdFromHash},${page},${count},'${urlBase}')`;
+      responseJSON.submitBtTitle = 'Save article';
+      responseJSON.urlBase = urlBase;
+
+      console.log(responseJSON);
+
+      responseJSON.backLink = `#article/${artIdFromHash}/${page}/${count}`;
+
+      document.getElementById(targetElm).innerHTML = Mustache.render(
+        document.getElementById('template-article-form').innerHTML,
+        responseJSON
+      );
+    } else {
+      responseJSON.backLink = `#articles/${page}/${count}`;
+      responseJSON.editLink = `#artEdit/${responseJSON.id}/${page}/${count}`;
+      responseJSON.deleteLink = `#artDelete/${responseJSON.id}/${page}/${count}`;
+      responseJSON.addCommentLink = `#commentInsert/${responseJSON.id}/${page}/${count}`;
+
+      document.getElementById(targetElm).innerHTML = Mustache.render(
+        document.getElementById('template-article').innerHTML,
+        responseJSON
+      );
+
+      await fetchAndProcessArticleComments(
+        artIdFromHash,
+        page,
+        count,
+        commentPage
+      );
+    }
+  } catch (error) {
+    ////here we process all the failed promises
+    const errMsgObj = { errMessage: error };
+    document.getElementById(targetElm).innerHTML = Mustache.render(
+      document.getElementById('template-articles-error').innerHTML,
+      errMsgObj
+    );
+  }
 }
 
 function editArticle(targetElm, artIdFromHash, page, count) {
@@ -280,7 +313,9 @@ function getLastLimit() {
 async function fetchArticles(limit = 20, offset = 0, offsetPage = 1) {
   const url = 'https://wt.kpi.fei.tuke.sk/api/article';
 
-  const response = await fetch(`${url}/?max=${limit}&offset=${offset}`);
+  const response = await fetch(
+    `${url}/?max=${limit}&offset=${offset}&tag=${uniqueTag}`
+  );
 
   if (!response.ok) {
     throw new Error(
@@ -315,4 +350,58 @@ async function deleteArticleReq(articleId) {
     );
   }
   return;
+}
+
+async function fetchAndProcessArticleComments(
+  articleId,
+  articlePage,
+  articleCount,
+  pageFromHash
+) {
+  try {
+    const page = pageFromHash ? parseInt(pageFromHash) : 1;
+    const offset = page > 1 ? commentCount * (page - 1) : 0;
+
+    const commentsResponse = await fetch(
+      `${urlBase}/article/${articleId}/comment?max=${commentCount}&offset=${offset}`
+    );
+    const comments = await commentsResponse.json();
+
+    // const
+    const previousCommentPageLink = `#article/${articleId}/${articlePage}/${articleCount}/${
+      page > 1 ? page - 1 : 1
+    }`;
+    const nextCommentPageLink = `#article/${articleId}/${articlePage}/${articleCount}/${
+      page + 1
+    }`;
+
+    // const nextCommentPageLink = await
+
+    console.log(comments);
+
+    document.getElementById('article-comments').innerHTML = Mustache.render(
+      document.getElementById('template-article-comment').innerHTML,
+      Object.assign({}, comments, {
+        articleId: articleId,
+        articlePage: articlePage,
+        articleCount: articleCount,
+        previousCommentPageLink: page > 1 ? page - 1 : 0,
+        nextCommentPageLink:
+          page * commentCount < comments.meta.totalCount ? page + 1 : 0,
+      })
+    );
+  } catch (error) {
+    console.log(error);
+
+    // TODO: error
+  }
+}
+
+async function insertComment(target, articleId, page, count) {
+  console.log(articleId);
+
+  await processInsertArticleComment(event, parseInt(articleId), urlBase);
+  window.location.hash = `#article/${parseInt(articleId)}/${parseInt(
+    page
+  )}/${parseInt(count)}`;
 }

@@ -155,7 +155,7 @@ function processArtEditFrmData(
     author: document.getElementById('author').value.trim(),
 
     imageLink: document.getElementById('imageLink').value.trim(),
-    tags: document.getElementById('tags').value.trim(),
+    tags: 'chemistry,' + document.getElementById('tags').value.trim(),
   };
 
   if (!(articleData.title && articleData.content)) {
@@ -243,7 +243,7 @@ function processInsertArticle(event, serverUrl) {
     author: document.getElementById('author').value.trim(),
 
     imageLink: document.getElementById('imageLink').value.trim(),
-    tags: document.getElementById('tags').value.trim(),
+    tags: 'chemistry,' + document.getElementById('tags').value.trim(),
   };
 
   if (!(articleData.title && articleData.content)) {
@@ -310,4 +310,62 @@ function processInsertArticle(event, serverUrl) {
       () =>
         (window.location.hash = `#article/${articleId}/${offset}/${totalCount}`)
     );
+}
+
+function processInsertArticleComment(event, articleId, serverUrl) {
+  //   event.preventDefault();
+  console.log(articleId);
+
+  //1. Gather and check the form data
+
+  const commentData = {
+    author: document.getElementById('author').value.trim(),
+    text: document.getElementById('text').value.trim(),
+  };
+
+  if (!commentData.author) {
+    commentData.author = 'Anonymous';
+  }
+
+  const postReqSettings =
+    //an object wih settings of the request
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json;charset=utf-8',
+      },
+      body: JSON.stringify(commentData),
+    };
+
+  //3. Execute the request
+
+  fetch(`${serverUrl}/article/${articleId}/comment`, postReqSettings) //now we need the second parameter, an object wih settings of the request.
+    .then((response) => {
+      //fetch promise fullfilled (operation completed successfully)
+      if (response.ok) {
+        //successful execution includes an error response from the server. So we have to check the return status of the response here.
+        return response.json(); //we return a new promise with the response data in JSON to be processed
+      } else {
+        //if we get server error
+        return Promise.reject(
+          new Error(
+            `Server answered with ${response.status}: ${response.statusText}.`
+          )
+        ); //we return a rejected promise to be catched later
+      }
+    })
+    .then((responseJSON) => {
+      //here we process the returned response data in JSON ...
+      //   window.alert('Updated comment successfully saved on server');
+      console.log(responseJSON);
+    })
+    .catch((error) => {
+      ////here we process all the failed promises
+      //   window.alert(`Failed to save the updated article on server. ${error}`);
+      console.log(error);
+    });
+  // .finally(
+  //   () =>
+  //     (window.location.hash = `#article/${articleId}/${offset}/${totalCount}`)
+  // );
 }

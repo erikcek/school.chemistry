@@ -1160,14 +1160,24 @@
             Keywords:
             {{tags}}
         </p>
-    </article>
-
-    <footer>
         <a href="{{backLink}}" class="linkAsButton"><< Back</a>
         <a href="{{editLink}}" class="linkAsButton">Edit</a>
         <a href="{{deleteLink}}" class="linkAsButton">Delete</a>
         <a href="#menuTitle" class="linkAsButton">Up to the menu</a>
-    </footer>
+        <section>
+            <article id="article-comments"></article>
+            <article id="article-comments-form">
+            <form onSubmit="window.location.hash = '{{addCommentLink}}'">
+                    <label for="author">Author</label>
+                    <input id="author" type="text">
+                    <label for="text">Author</label>                    
+                    <input id="text" type="text">
+                    <button type="submit">Add comment</button>
+                </form>
+            </article>
+        </section>
+    </article>
+
 
 </script>
 
@@ -1240,13 +1250,20 @@
     </footer>
 </script>
 
-    <!-- <script id="template-article-delete" type="text/template">
+    <script id="template-article-comment" type="text/template">
+        {{#comments}}
     <article>
-        <p>Do you realy wand to delete article ?</p>
-        <a href=''>Yes</a>
-        <a>No</a>
+        <p>author : {{author}}</p>
+        <p>{{text}}</p>
     </article>
-</script> -->
+    {{/comments}}
+    {{#previousCommentPageLink}}
+    <a href="#article/{{articleId}}/{{articlePage}}/{{articleCount}}/{{previousCommentPageLink}}">Previous page</a>
+    {{/previousCommentPageLink}}
+    {{#nextCommentPageLink}}
+    <a href="#article/{{articleId}}/{{articlePage}}/{{articleCount}}/{{nextCommentPageLink}}">Next page</a>
+    {{/nextCommentPageLink}}
+</script>
 
 
 
