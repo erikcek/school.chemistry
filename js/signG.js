@@ -1,8 +1,6 @@
 let auth2 = {};
 
 function startGSingIn() {
-  console.log('here');
-
   gapi.load('auth2', function () {
     gapi.signin2.render('SignInButton', {
       width: 240,
@@ -15,7 +13,6 @@ function startGSingIn() {
     gapi.auth2.init().then(
       //zavolat po inicializácii OAuth 2.0  (called after OAuth 2.0 initialisation)
       function () {
-        console.log('init');
         auth2 = gapi.auth2.getAuthInstance();
         auth2.currentUser.listen(userChanged);
         auth2.isSignedIn.listen(updateSignIn);
@@ -38,13 +35,11 @@ const onFailure = (error) => {
 const updateSignIn = () => {
   rednerSignButtons();
   console.log('update signin');
-  userUpdate();
   reloadHash();
 };
 
 const userChanged = () => {
   console.log('userchanged');
-  userUpdate();
 };
 
 const rednerSignButtons = () => {
@@ -64,22 +59,9 @@ const rednerSignButtons = () => {
   }
 };
 
-const userUpdate = () => {
-  const sgnd = auth2.isSignedIn.get();
-  if (sgnd) {
-    const profile = auth2.currentUser.get().getBasicProfile();
-    saveUserInfo(profile.getName(), profile.getEmail());
-  } else {
-    sessionStorage.userInfo = JSON.stringify({});
-  }
-};
+const userUpdate = () => {};
 
-const saveUserInfo = (name, email) => {
-  sessionStorage.userInfo = JSON.stringify({
-    name,
-    email,
-  });
-};
+const saveUserInfo = (name, email) => {};
 
 const signOut = () => {
   const auth2 = gapi.auth2.getAuthInstance();
