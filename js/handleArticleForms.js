@@ -1,76 +1,13 @@
-/*
- * Created by Stefan Korecko, 2020
- * Functions to handle forms for article editing and inserting
- */
-
-/*
-These functions work with the form from the template:
-
-        <form id="articleForm" onsubmit="return {{formSubmitCall}}">
-            <label for="author">Author:</label>
-            <input type="text" name="author" id="author" value="{{author}}" size="50" title="Article author, max. length 100 characters." maxlength="100" placeholder="napr. Ján Trieska" />
-            <br>
-            <label for="title">Title:</label>
-            <input type="text" name="title" id="title" value="{{title}}" size="50"  maxlength="100" pattern="\S[\S\s]*" required title="Article title, mandatory item, max. length: 100 characters, the first character must not be a space." placeholder="napr. Môj prvý príbeh / e.g. My story." />
-            <br>
-            <label for="imageLink">Image (url):</label>
-            <input type="url" name="imageLink" id="imageLink" value="{{imageLink}}" size="50" title="Image URL, max. length 100 characters." maxlength="100"/>
-            <br>
-            <label></label><button type="button" id="btShowFileUpload" onclick="showFileUpload()">Upload image</button>
-
-            <fieldset class="added hiddenElm" id="fsetFileUpload">
-                <legend>Image Upload</legend>
-                <input type="file" id="flElm" name="file" accept="image/jpeg, image/png"/>
-                <br />
-                <button type="button" id="btFileUpload" onclick="uploadImg('{{urlBase}}')">Send image to server</button>
-                <button type="button" id="btCancelFileUpload" onclick="cancelFileUpload()">Cancel uploading</button>
-            </fieldset>
-
-
-            <br>
-            <label for="content">Article content:</label>
-            <textarea
-                    name="content" id="content" spellcheck="true" lang="sk"
-                    cols="50" rows="20" required
-                    title="Article content, mandatory item, can be plain text or in HTML.">{{content}}</textarea>
-            <br>
-            <label for="tags">Keywords:</label>
-            <input  type="text" name="tags" id="tags" value="{{tags}}" size="50"
-                    title="Keyword list, comma separated." placeholder="e.g. village, drama" />
-
-            <br>
-            <br>
-            <button type="reset">
-                Reset Form
-            </button>
-            <button type="submit">
-                {{submitBtTitle}}
-            </button>
-
-        </form>
-
-which is processed by the function fetchAndProcessArticle() in routes.js
-
- */
-
-//Pridanie funkcionality pre kliknutie na tlacidlo "Nahraj obrázok / Upload image"
-//Adding functionality for the button "Nahraj obrázok / Upload image"
 function showFileUpload() {
-  document.getElementById('fsetFileUpload').classList.remove('hiddenElm');
-  document.getElementById('btShowFileUpload').classList.add('hiddenElm');
+  document.getElementById('fsetFileUpload').classList.remove('hide');
+  document.getElementById('btShowFileUpload').classList.add('hide');
 }
 
-//Pridanie funkcionality pre kliknutie na tlacidlo "Zruš nahrávanie / Cancel uploading"
-//Adding functionality for the button "Zruš nahrávanie / Cancel uploading"
 function cancelFileUpload() {
-  document.getElementById('fsetFileUpload').classList.add('hiddenElm');
-  document.getElementById('btShowFileUpload').classList.remove('hiddenElm');
+  document.getElementById('fsetFileUpload').classList.add('hide');
+  document.getElementById('btShowFileUpload').classList.remove('hide');
 }
 
-/**
- * Uploads an image to the server
- * @param serverUrl - basic part of the server url, without the service specification, i.e.  https://wt.kpi.fei.tuke.sk/api.
- */
 function uploadImg(serverUrl) {
   const files = document.getElementById('flElm').files;
 
@@ -143,6 +80,7 @@ function processArtEditFrmData(
   articleId,
   offset,
   totalCount,
+  commentPage,
   serverUrl
 ) {
   event.preventDefault();
@@ -228,14 +166,12 @@ function processArtEditFrmData(
     })
     .finally(
       () =>
-        (window.location.hash = `#article/${articleId}/${offset}/${totalCount}`)
+        (window.location.hash = `#article/${articleId}/${offset}/${totalCount}/${commentPage}`)
     );
 }
 
-function processInsertArticle(event, serverUrl) {
+async function processInsertArticle(event, serverUrl, backlink) {
   event.preventDefault();
-
-  //1. Gather and check the form data
 
   const articleData = {
     title: document.getElementById('title').value.trim(),
@@ -271,65 +207,43 @@ function processInsertArticle(event, serverUrl) {
     }
   }
 
-  const postReqSettings =
-    //an object wih settings of the request
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json;charset=utf-8',
-      },
-      body: JSON.stringify(articleData),
-    };
-
-  //3. Execute the request
-
-  fetch(`${serverUrl}/article`, postReqSettings) //now we need the second parameter, an object wih settings of the request.
-    .then((response) => {
-      //fetch promise fullfilled (operation completed successfully)
-      if (response.ok) {
-        //successful execution includes an error response from the server. So we have to check the return status of the response here.
-        return response.json(); //we return a new promise with the response data in JSON to be processed
-      } else {
-        //if we get server error
-        return Promise.reject(
-          new Error(
-            `Server answered with ${response.status}: ${response.statusText}.`
-          )
-        ); //we return a rejected promise to be catched later
-      }
-    })
-    .then((responseJSON) => {
-      //here we process the returned response data in JSON ...
-      window.alert('Updated article successfully saved on server');
-    })
-    .catch((error) => {
-      ////here we process all the failed promises
-      window.alert(`Failed to save the updated article on server. ${error}`);
-    })
-    .finally(
-      () =>
-        (window.location.hash = `#article/${articleId}/${offset}/${totalCount}`)
-    );
-}
-
-function processInsertArticleComment(event, articleId, serverUrl) {
-  //   event.preventDefault();
-  console.log(articleId);
-
-  //1. Gather and check the form data
-
-  const commentData = {
-    author: document.getElementById('author').value.trim(),
-    text: document.getElementById('text').value.trim(),
+  const postReqSettings = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json;charset=utf-8',
+    },
+    body: JSON.stringify(articleData),
   };
 
-  if (!commentData.author) {
-    commentData.author = 'Anonymous';
+  try {
+    const response = await fetch(`${serverUrl}/article`, postReqSettings);
+    if (!response.ok) {
+      throw new Error(
+        `Server answered with ${response.status}: ${response.statusText}.`
+      );
+    }
+    window.alert('Updated article successfully saved on server');
+    console.log(response);
+    const responseJson = await response.json();
+    console.log(responseJson);
+    window.location.hash = `#article/${responseJson.id}/1/20/1`;
+  } catch (error) {
+    window.alert(`Failed to save the updated article on server. ${error}`);
   }
+}
 
-  const postReqSettings =
-    //an object wih settings of the request
-    {
+async function processInsertArticleComment(articleId, serverUrl) {
+  try {
+    const commentData = {
+      author: document.getElementById('author').value.trim(),
+      text: document.getElementById('text').value.trim(),
+    };
+
+    if (!commentData.author) {
+      commentData.author = 'Anonymous';
+    }
+
+    const postReqSettings = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json;charset=utf-8',
@@ -337,35 +251,18 @@ function processInsertArticleComment(event, articleId, serverUrl) {
       body: JSON.stringify(commentData),
     };
 
-  //3. Execute the request
+    const response = await fetch(
+      `${serverUrl}/article/${articleId}/comment`,
+      postReqSettings
+    );
 
-  fetch(`${serverUrl}/article/${articleId}/comment`, postReqSettings) //now we need the second parameter, an object wih settings of the request.
-    .then((response) => {
-      //fetch promise fullfilled (operation completed successfully)
-      if (response.ok) {
-        //successful execution includes an error response from the server. So we have to check the return status of the response here.
-        return response.json(); //we return a new promise with the response data in JSON to be processed
-      } else {
-        //if we get server error
-        return Promise.reject(
-          new Error(
-            `Server answered with ${response.status}: ${response.statusText}.`
-          )
-        ); //we return a rejected promise to be catched later
-      }
-    })
-    .then((responseJSON) => {
-      //here we process the returned response data in JSON ...
-      //   window.alert('Updated comment successfully saved on server');
-      console.log(responseJSON);
-    })
-    .catch((error) => {
-      ////here we process all the failed promises
-      //   window.alert(`Failed to save the updated article on server. ${error}`);
-      console.log(error);
-    });
-  // .finally(
-  //   () =>
-  //     (window.location.hash = `#article/${articleId}/${offset}/${totalCount}`)
-  // );
+    if (!response.ok) {
+      throw new Error(
+        `Server answered with ${response.status}: ${response.statusText}.`
+      );
+    }
+    // const responseJson = await response.json();
+  } catch (e) {
+    alert('Unable to add new comment. Try again later.');
+  }
 }

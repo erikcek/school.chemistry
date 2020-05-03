@@ -4,31 +4,38 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="author" content="Erik Kandalík" />
+    <meta name="google-signin-scope" content="profile email">
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <meta name="google-signin-client_id"
+        content="766103811894-561rjgums9fdb3j0pvvolitv5pqg91vj.apps.googleusercontent.com">
     <link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/normalize.css" />
+    <!-- <link rel="stylesheet" href="css/normalize.css" /> -->
     <!-- <link rel="stylesheet" href="css/treesBlog.css" media="screen" /> -->
-    <link rel="stylesheet" href="css/welcomePage.css">
-    <link rel="stylesheet" href="css/footer.css">
+    <link rel="stylesheet" href="css/welcomePage.css" media="screen">
+    <!-- <link rel="stylesheet" href="css/footer.css"> -->
 
 
     <title>Chemistry - comprehensive collaboration</title>
 </head>
 
 <body>
-    <header>
-        <div class="menu" id='menu'>
-            <!-- 
-            <nav class="grey-container">
-                <ul>
-                    <li><a href="#welcome">Welcome!</a></li>
-                    <li><a href="#articles/{{page}}/{{count}}">Articles</a></li>
-                    <li><a href="#opinions">Visitor opinions</a></li>
-                    <li><a href="#addOpinion">Add your opinion</a></li>
-                    <li><a href="#artInsert">Add article</a></li>
-                </ul>
-            </nav> -->
+    <header class="grey-container">
+        <nav class="menu">
+            <span id="menuButton" class="hide" onclick="togglemenu()">Menu</span>
+            <ul id="menu">
 
-        </div>
+            </ul>
+
+
+            <div class="hide" id="SignInButton"></div>
+            <a id="SignOutButton" onClick="signOut()">Sign Out <span id="SignedUser"></span></a>
+        </nav>
+        <!-- <div>
+            <li>
+                <div class="hide" id="SignInButton"></div>
+            </li>
+            <li><button class="hide" id="SignOutButton" onClick="signOut()">Sign Out</button></li>
+        </div> -->
 
     </header>
 
@@ -1026,24 +1033,29 @@
 
 
     <script id="template-articles" type="text/template">
-    {{#articles}}
-    <article class="article">
-        <h2><a href="{{detailLink}}">{{title}}</a></h2>
-        <p>
-            by {{author}}
-        </p>
-        <p>
-            Content: {{content}}
-        </p>
-    </article>
-    {{/articles}}
-
-    {{#prevPage}}
-    <a href="#articles/{{prevPage}}/{{pageCount}}">Previous page</a>
-    {{/prevPage}}
-    {{#nextPage}}
-    <a href="#articles/{{nextPage}}/{{pageCount}}">Next page</a>
-    {{/nextPage}}
+    <section class="flex-column">
+        {{#articles}}
+        <article class="article">
+            <div class="row-left justify-sb">
+                <h2><a href="{{detailLink}}">{{title}}</a></h2>
+                <p class="colored-grey">
+                    by {{author}}
+                </p>
+            </div>
+            <p>
+                Content: {{content}}
+            </p>
+        </article>
+        {{/articles}}
+    </section>
+    <div class="nav-link">
+        {{#prevPage}}
+        <a href="#articles/{{prevPage}}/{{pageCount}}"><< Previous page</a>
+        {{/prevPage}}
+        {{#nextPage}}
+        <a href="#articles/{{nextPage}}/{{pageCount}}">Next page >></a>
+        {{/nextPage}}
+    </div>
 
     </script>
 
@@ -1058,20 +1070,53 @@
 
 </script>
 
+    <script id="template-error" type="text/template">
+    <article>
+        <p>
+            {{errMessage}}
+        </p>
+    </article>
+</script>
+
 
     <script id="template-opinions" type="text/template">
-    <article  id="artOpinions">
-        <div >
-            <div>
-              <h3>
-                Name: {{ name }}
-              </h3>
-              <i>{{ createdDate }}</i>
-              </div>
-              <p>Content: {{ text }}</p>
-              <p>Keyword: {{ keyvord }}</p>
-            </div>
-    </article>
+        <article class="opinion-container-header">
+            <h2>Tis are opinions of out visitors.</h2>
+        </article>
+        <section  class="article-container flex-column">
+            {{#opinions}}
+            <article  id="artOpinions" class="white-color opinion">
+    
+                    <div class="row-left justify-sb">
+                    <h3>
+                        Author: {{ name }}
+                    </h3>
+                    <i class="colored-grey">{{ createdDate }}</i>
+                    </div>
+                    <p>{{ text }}</p>
+                    <br>
+                    <div class="row-left justify-sb">
+                        <div>
+                            {{#keyvord}}
+                            <p class="colored-grey">Keyword: {{ keyvord }}</p>
+                            {{/keyvord}}
+                            {{#email}}
+                            <p class="colored-grey">Email: {{ email }}</p>
+                            {{/email}}
+                            {{#gender}}
+                            <p class="colored-grey">Gender: {{ gender }}</p>
+                            {{/gender}}
+                            {{#acceptance}}
+                            <p class="colored-grey">Acceptance: {{ acceptance }}</p>
+                            {{/acceptance}}
+                        </div>
+                        {{#pictureUrl}}
+                        <img height="150" src="{{pictureUrl}}">
+                        {{/pictureUrl}}
+                    </div>
+            </article>
+            {{/opinions}}
+    </section>
 </script>
 
     <script id="template-addOpinion" type="text/template">
@@ -1145,78 +1190,94 @@
 </script>
 
     <script id="template-article" type="text/template">
-    <article>
-        <h3>{{title}}</h3>
-        <p>
-            by {{author}}
-        </p>
-        {{#imageLink}}
-        <figure>
-            <img src="{{imageLink}}" alt="article figure" />
-        </figure>
-        {{/imageLink}}
-        <div>{{{content}}}</div>
-        <p>
-            Keywords:
-            {{tags}}
-        </p>
-        <a href="{{backLink}}" class="linkAsButton"><< Back</a>
-        <a href="{{editLink}}" class="linkAsButton">Edit</a>
-        <a href="{{deleteLink}}" class="linkAsButton">Delete</a>
-        <a href="#menuTitle" class="linkAsButton">Up to the menu</a>
-        <section>
+        <main class="white-color">
+                <article class="article-header">
+                    <h2>{{title}}</h2>
+                    <p>
+                        by {{author}}
+                    </p>
+                    {{#imageLink}}
+                    <figure>
+                        <img class="" src="{{imageLink}}" alt="article figure" />
+                    </figure>
+                    {{/imageLink}}
+                    <div>{{{content}}}</div>
+                    <p>
+                        Keywords:
+                        {{tags}}
+                    </p>
+                </article>
+        </main>
+        <div class="nav-link">
+            <a href="{{backLink}}" class="linkAsButton"><< Back</a>
+            <a href="{{editLink}}" class="linkAsButton">Edit</a>
+            <a href="{{deleteLink}}" class="linkAsButton">Delete</a>
+        </div>
+        <section class="white-color flex-column comment-section">
             <article id="article-comments"></article>
-            <article id="article-comments-form">
+            <article id="article-comments-form" class="comment-form grey-container">
             <form onSubmit="window.location.hash = '{{addCommentLink}}'">
-                    <label for="author">Author</label>
+                <div class="row-left justify-sb">
+                    <label for="author">Author:</label>
                     <input id="author" type="text">
-                    <label for="text">Author</label>                    
-                    <input id="text" type="text">
-                    <button type="submit">Add comment</button>
+                </div>
+                <div class="row-left justify-sb">
+                    <label for="text">Text:</label>                    
+                    <textarea id="text" type="text" required></textarea>
+                </div>
+                <div class="row-right" >
+                    <button class="btn-primary" type="submit">Add comment</button>
+                </div>
                 </form>
             </article>
         </section>
-    </article>
-
 
 </script>
 
     <script id="template-menu" type="text/template">
-    <nav class="grey-container">
-        <ul>
-            <li><a href="#welcome">Welcome!</a></li>
-            <li><a href="#articles/{{page}}/{{count}}">Articles</a></li>
-            <li><a href="#opinions">Visitor opinions</a></li>
-            <li><a href="#addOpinion">Add your opinion</a></li>
-            <li><a href="#artInsert">Add article</a></li>
-        </ul>
-    </nav>
-</script>
+    <!-- <nav class="grey-container">
+        <ul> -->
+    <li><a href="#welcome">Welcome!</a></li>
+    <li><a href="#articles/{{page}}/{{count}}">Articles</a></li>
+    <li><a href="#opinions">Visitor opinions</a></li>
+    <li><a href="#addOpinion">Add your opinion</a></li>
+    <li><a href="#artInsert">Add article</a></li>
+    <!-- </ul>
+    </nav> -->
+    </script>
 
     <script id="template-article-form" type="text/template">
-    <article>
-
-        <h2>{{formTitle}}</h2>
-        <br><br>
-
-        <form id="articleForm" onsubmit="return {{formSubmitCall}}">
+        <article class="opinion-container-header">
+            <h2>{{formTitle}}</h2>
+            <p>
+                We are glad to see you here!<br>Please, use the form below and help others to learn something new!
+            </p>
+        </article>
+    <article class="article-container">
+        <form id="articleForm" class="w-50 p-3 text-white" onsubmit="return {{formSubmitCall}}">
             <label for="author">Author:</label>
-            <input type="text" name="author" id="author" value="{{author}}" size="50" title="Article author, max. length 100 characters." maxlength="100" placeholder="e.g. Ján Trieska" />
-            <br>
+            <input type="text" name="author" id="author" value="{{author}}" title="Article author, max. length 100 characters." maxlength="100" placeholder="e.g. Ján Trieska" />
+            
             <label for="title">Title:</label>
-            <input type="text" name="title" id="title" value="{{title}}" size="50"  maxlength="100" pattern="\S[\S\s]*" required title="Article title, mandatory item, max. length: 100 characters, the first character must not be a space." placeholder="e.g. My story." />
-            <br>
+            <input type="text" name="title" id="title" value="{{title}}"  maxlength="100" pattern="\S[\S\s]*" required title="Article title, mandatory item, max. length: 100 characters, the first character must not be a space." placeholder="e.g. My story." />
+            
             <label for="imageLink">Image (url):</label>
-            <input type="url" name="imageLink" id="imageLink" value="{{imageLink}}" size="50" title="Image URL, max. length 100 characters." maxlength="100"/>
+            <input type="url" name="imageLink" id="imageLink" value="{{imageLink}}"  title="Image URL, max. length 100 characters." maxlength="100"/>
             <br>
-            <label></label><button type="button" id="btShowFileUpload" onclick="showFileUpload()">Upload image</button>
+            <br>
+            <div class="row-right">
+            <button type="button" id="btShowFileUpload" onclick="showFileUpload()">Upload image</button>
+            </div>
 
-            <fieldset class="added hiddenElm" id="fsetFileUpload">
+            <fieldset class="added hide" id="fsetFileUpload">
                 <legend>Image Upload</legend>
                 <input type="file" id="flElm" name="file" accept="image/jpeg, image/png"/>
-                <br />
-                <button type="button" id="btFileUpload" onclick="uploadImg('{{urlBase}}')">Send image to server</button>
-                <button type="button" id="btCancelFileUpload" onclick="cancelFileUpload()">Cancel uploading</button>
+                <br>
+                <br>
+                <div class="row-right">
+                    <button type="button"  class="btn btn-secondary w-25 ml-3"id="btCancelFileUpload" onclick="cancelFileUpload()">Cancel uploading</button>
+                    <button type="button" class="btn btn-primary w-25 ml-3" id="btFileUpload" onclick="uploadImg('{{urlBase}}')">Seve image</button>
+                </div> 
             </fieldset>
 
 
@@ -1233,36 +1294,44 @@
 
             <br>
             <br>
-            <button type="reset">
+            <div class="row-right">
+            <button type="reset" class="btn btn-secondary w-25 ml-3">
                 Reset Form
             </button>
-            <button type="submit">
+            <button type="submit" class="btn btn-primary w-25 ml-3">
                 {{submitBtTitle}}
             </button>
+            </div>
 
         </form>
 
     </article>
 
-    <footer>
-        <a href="{{backLink}}" class="linkAsButton"><< Back</a>
-        <a href="#menuTitle" class="linkAsButton">Up to the menu</a>
-    </footer>
+    <div class="nav-link">
+        <a href="{{backLink}}"><< Back</a>
+    </div>
+
 </script>
 
     <script id="template-article-comment" type="text/template">
         {{#comments}}
-    <article>
-        <p>author : {{author}}</p>
-        <p>{{text}}</p>
-    </article>
-    {{/comments}}
-    {{#previousCommentPageLink}}
-    <a href="#article/{{articleId}}/{{articlePage}}/{{articleCount}}/{{previousCommentPageLink}}">Previous page</a>
-    {{/previousCommentPageLink}}
-    {{#nextCommentPageLink}}
-    <a href="#article/{{articleId}}/{{articlePage}}/{{articleCount}}/{{nextCommentPageLink}}">Next page</a>
-    {{/nextCommentPageLink}}
+        <article class="grey-container comment">
+            <div class="row-left justify-sb">
+                <p>author : {{author}}</p>
+                <p class="colored-grey">{{dateCreated}}</p>
+            </div>
+            <br>
+            <p>{{text}}</p>
+        </article>
+        {{/comments}}
+        <div class="nav-link justify-sb">
+            {{#previousCommentPageLink}}
+            <a href="#article/{{articleId}}/{{articlePage}}/{{articleCount}}/{{previousCommentPageLink}}"><< Previous page</a>
+            {{/previousCommentPageLink}}
+            {{#nextCommentPageLink}}
+            <a href="#article/{{articleId}}/{{articlePage}}/{{articleCount}}/{{nextCommentPageLink}}">Next page >></a>
+            {{/nextCommentPageLink}}
+        </div>
 </script>
 
 
@@ -1273,9 +1342,15 @@
 
     <script src="js/addOpinion.js"></script>
 
+    <script src="js/signG.js"></script>
+
+    <script src="js/menu.js"></script>
+
     <script src="js/handleArticleForms.js"></script>
 
     <script type="module" src="js/routerInit.js"></script>
+
+    <script src="https://apis.google.com/js/platform.js?onload=startGSingIn" async defer></script>
 
 </body>
 

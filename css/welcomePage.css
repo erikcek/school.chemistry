@@ -1,7 +1,8 @@
 body {
-  /* background-color: #191919; */
-  background-color: white;
+  background-color: #191919;
+  /* background-color: white; */
   font-family: 'Open Sans';
+  margin: 0;
 }
 
 h1 {
@@ -224,8 +225,7 @@ td {
 
 nav ul {
   list-style: none;
-  max-width: 80%;
-  margin: 0 auto;
+  /* max-width: 80%; */
   padding: 0;
 }
 
@@ -238,15 +238,20 @@ header {
   top: 0;
   position: -webkit-sticky; /* Safari */
   position: sticky;
+  /* display: flex; */
+  /* width: 100%; */
 }
 
 nav {
   padding: 10px;
+  max-width: 80%;
+  margin: auto;
 }
 
 nav a {
   text-decoration: none;
   color: white;
+  cursor: pointer;
 }
 
 nav a:visited {
@@ -268,7 +273,8 @@ nav a:hover {
   display: flex;
   justify-content: center;
   margin: auto;
-  max-width: 560px;
+  /* max-width: 560px; */
+  max-width: 50%;
   background-color: #191919;
   padding: 2%;
   color: white;
@@ -279,7 +285,8 @@ nav a:hover {
   flex-direction: column;
   justify-content: center;
   margin: 5% auto 0;
-  max-width: 560px;
+  /* max-width: 560px; */
+  max-width: 50%;
   background-color: #191919;
   padding: 2%;
   color: white;
@@ -306,6 +313,15 @@ input {
 input[type='radio'],
 input[type='checkbox'] {
   width: auto;
+}
+
+input[type='file'] {
+  background-color: white;
+}
+
+fieldset {
+  border: solid 1px white;
+  padding: 10px;
 }
 
 .inlineLabel {
@@ -376,12 +392,13 @@ select {
   padding: 2%;
 }
 
+.btn,
 button {
   color: white;
   padding: 2%;
   display: inline-block;
   width: 25%;
-  background-color: grey;
+  background-color: rgb(63, 63, 63);
   border: 1px solid transparent;
   border-radius: 5px;
   font-size: large;
@@ -391,9 +408,12 @@ button {
 button:hover {
   opacity: 80%;
 }
-
-button[type='submit'] {
+.btn-primary {
   background-color: #007bff;
+}
+
+.btn-secondary {
+  background-color: rgb(63, 63, 63);
 }
 
 .c-comment-box {
@@ -417,6 +437,158 @@ p {
 
 .article {
   color: white;
+  /* background-color: #575757; */
+  /* border-radius: 10px; */
+  border-bottom: solid 1px #999999;
+  padding: 20px 0 20px;
+  margin: 10px auto 10px auto;
+  /* width: 70%; */
+  max-width: 50%;
+}
+
+.article a {
+  text-decoration: none;
+  color: white;
+}
+
+.article a:hover {
+  text-decoration: underline;
+}
+
+.article a:visited {
+  text-decoration: none;
+  color: white;
+}
+
+.hide {
+  display: none;
+}
+
+.menu {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50px;
+}
+
+.menu ul {
+  display: flex;
+}
+
+#SignInButton,
+#SignOutButton {
+  margin-left: auto;
+}
+
+.article-container {
+  display: flex;
+  justify-content: center;
+  margin: auto;
+  max-width: 50%;
+  background-color: #191919;
+  padding: 2%;
+  color: white;
+}
+
+.white-color {
+  color: white;
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.article-header {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: 5% auto 0;
+  /* max-width: 560px; */
+  max-width: 80%;
+  background-color: #191919;
+  padding: 2%;
+  color: white;
+}
+
+.nav-link {
+  color: #999999;
+  padding: 50px;
+  text-align: center;
+  font-size: 17px;
+}
+
+.nav-link a {
+  text-decoration: none;
+  color: inherit;
+  margin: 0 10px;
+}
+
+footer {
+  color: #999999;
+  padding: 50px;
+  text-align: center;
+  font-size: 12px;
+}
+
+footer a {
+  text-decoration: none;
+  color: inherit;
+}
+.nav-link a:hover,
+footer a:hover {
+  text-decoration: underline;
+}
+
+.comment-section {
+  max-width: 80%;
+  margin: auto;
+}
+
+.comment {
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 5px;
+}
+
+.comment-form {
+  padding: 20px;
+  border-radius: 5px;
+}
+
+.comment-form input,
+.comment-form textarea {
+  padding: 15px;
+  width: 80%;
+}
+
+.comment-form label {
+  display: block;
+}
+
+.comment-form button {
+  padding: 10px;
+  width: auto;
+}
+
+.justify-sb {
+  justify-content: space-between;
+}
+
+.colored-grey {
+  color: #999999;
+}
+
+.opinion {
+  width: 100%;
+  border-bottom: solid 1px #999999;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+}
+
+img {
+  width: 100%;
+  margin: 15px 0;
 }
 
 @media print {
@@ -426,5 +598,47 @@ p {
 
   nav {
     display: none;
+  }
+}
+
+@media only screen and (max-width: 1000px) {
+  .menu ul {
+    flex-direction: column;
+    justify-content: left;
+    align-items: center;
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 50px;
+    background-color: #2b2b2b;
+    z-index: 2;
+  }
+
+  .menu ul li {
+    padding: 10px;
+  }
+
+  #menuButton {
+    display: inline-block;
+    color: white;
+    cursor: pointer;
+  }
+
+  #menuButton:hover {
+    text-decoration: underline;
+  }
+
+  .opinion-container-header {
+    max-width: 95%;
+  }
+
+  .opinion-container,
+  .article-container {
+    max-width: 95%;
+  }
+
+  .article {
+    max-width: 95%;
+    margin: 10px;
   }
 }
