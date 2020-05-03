@@ -54,26 +54,7 @@ export default [
     target: 'router-view',
     getTemplate: insertArticle,
   },
-  {
-    hash: 'commentInsert',
-    tarhet: 'route-view',
-    getTemplate: insertComment,
-  },
 ];
-
-// function fetchadnDisplayOpinions(targetElm) {
-//   const opinions = JSON.parse(localStorage.contactForm);
-
-//   if (opinions && Array.isArray(opinions)) {
-//     const container = document.getElementById(targetElm);
-
-//     const content = opinions.reduce((acum, elem) => {
-//       return acum + renderOpinion(elem);
-//     }, '');
-
-//     container.innerHTML = content;
-//   }
-// }
 
 async function fetchAndDisplayArticles(targetElm, page, count) {
   if (page === undefined || count === undefined) {
@@ -183,6 +164,7 @@ async function fetchAndProcessArticle(
       responseJSON.editLink = `#artEdit/${responseJSON.id}/${page}/${count}/${commentPage}`;
       responseJSON.deleteLink = `#artDelete/${responseJSON.id}/${page}/${count}/${commentPage}`;
       responseJSON.addCommentLink = `#commentInsert/${responseJSON.id}/${page}/${count}/${commentPage}`;
+      responseJSON.commentSubmitCall = `processInsertArticleComment(event,${artIdFromHash},${page},${count},${commentPage},'${urlBase}')`;
       document.getElementById(targetElm).innerHTML = Mustache.render(
         document.getElementById('template-article').innerHTML,
         responseJSON
@@ -399,14 +381,6 @@ async function fetchAndProcessArticleComments(
       'There wa s a problem with loading comments'
     );
   }
-}
-
-async function insertComment(target, articleId, page, count, commentPage) {
-  await processInsertArticleComment(parseInt(articleId), urlBase);
-
-  window.location.hash = `#article/${parseInt(articleId)}/${parseInt(
-    page
-  )}/${parseInt(count)}/${commentPage}`;
 }
 
 function addOpinion(targetElm) {

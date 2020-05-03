@@ -1217,7 +1217,7 @@
             <article id="article-comments"></article>
             <div id="addCommentButton" class="row-right"><button onclick="showAddComment()" class="btn-primary">Add comment</button></div>
             <article id="article-comments-form" class="comment-form grey-container hide">
-            <form onSubmit="window.location.hash = '{{addCommentLink}}'">
+            <form onsubmit="return {{commentSubmitCall}}">
                 <div class="row-left justify-sb">
                     <label for="author">Author:</label>
                     <input id="author" value="{{commentAuthor}}" type="text">

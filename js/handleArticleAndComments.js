@@ -230,7 +230,15 @@ async function processInsertArticle(event, serverUrl, backlink) {
   }
 }
 
-async function processInsertArticleComment(articleId, serverUrl) {
+async function processInsertArticleComment(
+  event,
+  articleId,
+  page,
+  count,
+  commentPage,
+  serverUrl
+) {
+  event.preventDefault();
   try {
     const commentData = {
       author: document.getElementById('author').value.trim(),
@@ -260,7 +268,10 @@ async function processInsertArticleComment(articleId, serverUrl) {
       );
     }
     // const responseJson = await response.json();
+    reloadHash();
   } catch (e) {
+    console.log(e);
+
     alert('Unable to add new comment. Try again later.');
   }
 }
