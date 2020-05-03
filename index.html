@@ -1061,7 +1061,7 @@
 
     <script id="template-articles-error" type="text/template">
 
-    <article>
+    <article class="opinion-container-header">
         <h2>Articles acquisition failed</h2>
         <p>
             {{errMessage}}
@@ -1071,7 +1071,7 @@
 </script>
 
     <script id="template-error" type="text/template">
-    <article>
+    <article class="opinion-container-header">
         <p>
             {{errMessage}}
         </p>
@@ -1131,11 +1131,11 @@
 
             <div>
                 <label for="name">Name</label>
-                <input type="text" id="name" placeholder="Name" required>
+                <input type="text" id="name" placeholder="Name" value="{{googleName}}" required>
             </div>
             <div>
                 <label for="email">Email</label>
-                <input type="email" id="email" placeholder="Email" required>
+                <input type="email" id="email" value="{{googleEmail}}" placeholder="Email" required>
             </div>
 
 
@@ -1215,17 +1215,19 @@
         </div>
         <section class="white-color flex-column comment-section">
             <article id="article-comments"></article>
-            <article id="article-comments-form" class="comment-form grey-container">
+            <div id="addCommentButton" class="row-right"><button onclick="showAddComment()" class="btn-primary">Add comment</button></div>
+            <article id="article-comments-form" class="comment-form grey-container hide">
             <form onSubmit="window.location.hash = '{{addCommentLink}}'">
                 <div class="row-left justify-sb">
                     <label for="author">Author:</label>
-                    <input id="author" type="text">
+                    <input id="author" value="{{commentAuthor}}" type="text">
                 </div>
                 <div class="row-left justify-sb">
                     <label for="text">Text:</label>                    
                     <textarea id="text" type="text" required></textarea>
                 </div>
                 <div class="row-right" >
+                    <button class="btn-secondary" onclick="hideAddComment()">Cancel</button>
                     <button class="btn-primary" type="submit">Add comment</button>
                 </div>
                 </form>
@@ -1342,7 +1344,7 @@
 
     <script src="js/signG.js"></script>
 
-    <script src="js/handleArticleAndComments.js.js"></script>
+    <script src="js/handleArticleAndComments.js"></script>
 
     <script type="module" src="js/routerInit.js"></script>
 

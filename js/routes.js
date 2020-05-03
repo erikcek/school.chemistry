@@ -136,9 +136,7 @@ async function fetchAndDisplayArticle(
   count,
   commentPage
 ) {
-  console.log('fetchAndDisplayArticle - start');
   await fetchAndProcessArticle(...arguments, false);
-  console.log('fetchAndDisplayArticle - end');
 }
 
 async function fetchAndProcessArticle(
@@ -149,24 +147,26 @@ async function fetchAndProcessArticle(
   commentPageFromHash,
   forEdit
 ) {
-  console.log('fetchAndProcessArticle - start');
-
   const commentPage = parseInt(commentPageFromHash);
 
   const url = `${urlBase}/article/${artIdFromHash}`;
   try {
     const response = await fetch(url);
     if (!response.ok) {
-      throw new rror(
+      throw new Error(
         `Server answered with ${response.status}: ${response.statusText}.`
       );
     }
     const responseJSON = await response.json();
     responseJSON.tags = responseJSON.tags.filter((f) => f !== uniqueTag);
+    const googleUser = getGoogleUser();
+
+    if (googleUser.googleName) {
+      responseJSON.author = googleUser.googleName;
+      responseJSON.commentAuthor = googleUser.googleName;
+    }
 
     if (forEdit) {
-      console.log('article edit');
-
       responseJSON.formTitle = 'Article Edit';
       responseJSON.formSubmitCall = `processArtEditFrmData(event,${artIdFromHash},${page},${count},${commentPage},'${urlBase}')`;
       responseJSON.submitBtTitle = 'Save article';
@@ -183,7 +183,6 @@ async function fetchAndProcessArticle(
       responseJSON.editLink = `#artEdit/${responseJSON.id}/${page}/${count}/${commentPage}`;
       responseJSON.deleteLink = `#artDelete/${responseJSON.id}/${page}/${count}/${commentPage}`;
       responseJSON.addCommentLink = `#commentInsert/${responseJSON.id}/${page}/${count}/${commentPage}`;
-
       document.getElementById(targetElm).innerHTML = Mustache.render(
         document.getElementById('template-article').innerHTML,
         responseJSON
@@ -197,15 +196,14 @@ async function fetchAndProcessArticle(
       );
     }
   } catch (error) {
-    ////here we process all the failed promises
+    console.log(error);
+
     const errMsgObj = { errMessage: error };
     document.getElementById(targetElm).innerHTML = Mustache.render(
       document.getElementById('template-articles-error').innerHTML,
       errMsgObj
     );
   }
-
-  console.log('fetchAndProcessArticle - end');
 }
 
 function editArticle(targetElm, artIdFromHash, page, count) {
@@ -234,13 +232,15 @@ async function deleteArticle(targetElm, artIdFromHash, page, count) {
 }
 
 async function insertArticle(targetElm, artIdFromHash, page, count) {
+  const googleUser = getGoogleUser();
   const responseJSON = {};
-  responseJSON.formTitle = 'Article Edit';
-  // responseJSON.backLink = `#article/${artIdFromHash}/${page}/${count}`;
+  responseJSON.formTitle = 'Add Article';
   responseJSON.formSubmitCall = `processInsertArticle(event, '${urlBase}')`;
-
   responseJSON.submitBtTitle = 'Insert article';
   responseJSON.urlBase = urlBase;
+  if (googleUser.googleName) {
+    responseJSON.author = googleUser.googleName;
+  }
 
   document.getElementById(targetElm).innerHTML = Mustache.render(
     document.getElementById('template-article-form').innerHTML,
@@ -370,19 +370,17 @@ async function fetchAndProcessArticleComments(
     const comments = await commentsResponse.json();
 
     comments.comments = comments.comments.map((c) => {
-      console.log(new Date(c.dateCreated).toDateString());
-
       return Object.assign({}, c, {
         dateCreated: new Date(c.dateCreated).toDateString(),
       });
     });
-    // const
-    const previousCommentPageLink = `#article/${articleId}/${articlePage}/${articleCount}/${
-      page > 1 ? page - 1 : 1
-    }`;
-    const nextCommentPageLink = `#article/${articleId}/${articlePage}/${articleCount}/${
-      page + 1
-    }`;
+    // // const
+    // const previousCommentPageLink = `#article/${articleId}/${articlePage}/${articleCount}/${
+    //   page > 1 ? page - 1 : 1
+    // }`;
+    // const nextCommentPageLink = `#article/${articleId}/${articlePage}/${articleCount}/${
+    //   page + 1
+    // }`;
 
     // const nextCommentPageLink = await
 
@@ -398,35 +396,29 @@ async function fetchAndProcessArticleComments(
       })
     );
   } catch (error) {
-    console.log(error);
-
-    // TODO: error
+    renderError(
+      'article-comments',
+      'There wa s a problem with loading comments'
+    );
   }
 }
 
 async function insertComment(target, articleId, page, count, commentPage) {
-  console.log('insertComment - start');
-
   await processInsertArticleComment(parseInt(articleId), urlBase);
 
   window.location.hash = `#article/${parseInt(articleId)}/${parseInt(
     page
   )}/${parseInt(count)}/${commentPage}`;
-  console.log('insertComment - end');
 }
 
 function addOpinion(targetElm) {
-  document.getElementById(targetElm).innerHTML = document.getElementById(
-    'template-addOpinion'
-  ).innerHTML;
+  const googleUser = getGoogleUser();
+  console.log(googleUser);
 
-  const userInfo = JSON.parse(sessionStorage.userInfo);
-  if (userInfo.name !== undefined) {
-    document.getElementById('name').value = userInfo.name;
-  }
-  if (userInfo.email !== undefined) {
-    document.getElementById('email').value = userInfo.email;
-  }
+  document.getElementById(targetElm).innerHTML = Mustache.render(
+    document.getElementById('template-addOpinion').innerHTML,
+    googleUser
+  );
 }
 
 async function fetchadnDisplayOpinions(targetElm) {
@@ -442,7 +434,6 @@ async function fetchadnDisplayOpinions(targetElm) {
     const response = await fetch(back4appURL, options);
 
     const responseJson = await response.json();
-    console.log(responseJson.results);
 
     responseJson.results = responseJson.results.map((i) => {
       return Object.assign({}, i, {
@@ -468,4 +459,17 @@ function renderError(targetElm, msg) {
     document.getElementById('template-error').innerHTML,
     { errMessage: msg }
   );
+}
+
+function getGoogleUser() {
+  const googleAuth = gapi.auth2.getAuthInstance();
+
+  if (googleAuth.isSignedIn.get()) {
+    return {
+      googleName: googleAuth.currentUser.get().getBasicProfile().getName(),
+      googleEmail: googleAuth.currentUser.get().getBasicProfile().getEmail(),
+    };
+  } else {
+    return {};
+  }
 }

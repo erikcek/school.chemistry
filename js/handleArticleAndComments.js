@@ -266,3 +266,13 @@ async function processInsertArticleComment(articleId, serverUrl) {
     alert('Unable to add new comment. Try again later.');
   }
 }
+
+function showAddComment() {
+  document.getElementById('addCommentButton').classList.add('hide');
+  document.getElementById('article-comments-form').classList.remove('hide');
+}
+
+function hideAddComment() {
+  document.getElementById('addCommentButton').classList.remove('hide');
+  document.getElementById('article-comments-form').classList.add('hide');
+}
