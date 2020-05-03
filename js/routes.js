@@ -196,8 +196,6 @@ async function fetchAndProcessArticle(
       );
     }
   } catch (error) {
-    console.log(error);
-
     const errMsgObj = { errMessage: error };
     document.getElementById(targetElm).innerHTML = Mustache.render(
       document.getElementById('template-articles-error').innerHTML,
@@ -413,8 +411,6 @@ async function insertComment(target, articleId, page, count, commentPage) {
 
 function addOpinion(targetElm) {
   const googleUser = getGoogleUser();
-  console.log(googleUser);
-
   document.getElementById(targetElm).innerHTML = Mustache.render(
     document.getElementById('template-addOpinion').innerHTML,
     googleUser

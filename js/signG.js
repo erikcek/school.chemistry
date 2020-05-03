@@ -27,6 +27,7 @@ const onSuccess = (googleUser) => {
 };
 
 const onFailure = (error) => {
+  alert('Unable login to google.');
   console.log(error);
 };
 

@@ -223,9 +223,7 @@ async function processInsertArticle(event, serverUrl, backlink) {
       );
     }
     window.alert('Updated article successfully saved on server');
-    console.log(response);
     const responseJson = await response.json();
-    console.log(responseJson);
     window.location.hash = `#article/${responseJson.id}/1/20/1`;
   } catch (error) {
     window.alert(`Failed to save the updated article on server. ${error}`);
