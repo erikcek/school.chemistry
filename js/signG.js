@@ -23,8 +23,6 @@ function startGSingIn() {
 }
 
 const onSuccess = (googleUser) => {
-  console.log(googleUser.getBasicProfile());
-
   console.log('Logged in as: ' + googleUser.getBasicProfile().getName());
 };
 
