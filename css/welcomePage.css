@@ -441,7 +441,8 @@ p {
   /* border-radius: 10px; */
   border-bottom: solid 1px #999999;
   padding: 20px 0 20px;
-  margin: 10px auto 10px auto;
+  margin: 10px auto;
+  width: 100%;
   /* width: 70%; */
   max-width: 50%;
 }
@@ -586,7 +587,7 @@ footer a:hover {
   margin-bottom: 20px;
 }
 
-img {
+.article-image {
   width: 100%;
   margin: 15px 0;
 }
@@ -622,10 +623,20 @@ img {
     display: inline-block;
     color: white;
     cursor: pointer;
+    margin: 0;
+    padding: 25px 0;
   }
 
   #menuButton:hover {
     text-decoration: underline;
+  }
+
+  #menuButton:hover ~ #menu {
+    display: flex;
+  }
+
+  #menu:hover {
+    display: flex;
   }
 
   .opinion-container-header {

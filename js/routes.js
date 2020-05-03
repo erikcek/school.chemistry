@@ -76,10 +76,7 @@ export default [
 // }
 
 async function fetchAndDisplayArticles(targetElm, page, count) {
-  console.log('fetchAndDisplayArticles - start');
-
   if (page === undefined || count === undefined) {
-    console.log('fetchAndDisplayArticles - start - here');
     window.location.hash = `#articles/${getLastOffsetPage()}/${getLastLimit()}`;
     return;
   }
@@ -89,29 +86,10 @@ async function fetchAndDisplayArticles(targetElm, page, count) {
   const offset = offsetPage > 1 ? limit * (offsetPage - 1) : 0;
 
   try {
+    //fetch articles načíta articles + content plus nataví link na deftail
     const response = await fetchArticles(limit, offset, offsetPage);
 
     const totalCount = response.meta.totalCount;
-    // const artContentPromises = response.articles.map((article) => {
-    //   return fetch(`${urlBase}/article/${article.id}`);
-    // });
-
-    // const articles = await Promise.all(artContentPromises);
-
-    // const errorsUrl = articles.reduce((acum, item) => {
-    //   if (!item.ok) {
-    //     return acum + ' ' + item.url;
-    //   }
-    //   return acum;
-    // }, '');
-
-    // if (errorsUrl !== '') {
-    //   throw new Error(`Unable load articles from ${errorsUrl}`);
-    // }
-
-    // const articlesJson = await Promise.all(articles.map((a) => a.json()));
-
-    // console.log(articlesJson);
 
     document.getElementById(targetElm).innerHTML = Mustache.render(
       document.getElementById('template-articles').innerHTML,
@@ -184,6 +162,7 @@ async function fetchAndProcessArticle(
       );
     }
     const responseJSON = await response.json();
+    responseJSON.tags = responseJSON.tags.filter((f) => f !== uniqueTag);
 
     if (forEdit) {
       console.log('article edit');
